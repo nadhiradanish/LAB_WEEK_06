@@ -4,7 +4,6 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.lab_week_06.ImageLoader
 import com.example.lab_week_06.model.CatModel
 import com.example.lab_week_06.model.CatBreed
 import com.example.lab_week_06.model.Gender
@@ -14,8 +13,9 @@ private const val MALE_SYMBOL = "\u2642"
 private const val UNKNOWN_SYMBOL = "?"
 
 class CatViewHolder(
-    containerView: View,
-    private val imageLoader: ImageLoader
+    private val containerView: View,
+    private val imageLoader: ImageLoader,
+    private val onClickListener: CatAdapter.OnClickListener // ← pakai dari Adapter
 ) : RecyclerView.ViewHolder(containerView) {
 
     private val catBiographyView: TextView by lazy {
@@ -35,6 +35,11 @@ class CatViewHolder(
     }
 
     fun bindData(cat: CatModel) {
+        containerView.setOnClickListener {
+            // langsung pakai listener yang dikirim dari adapter
+            onClickListener.onItemClick(cat)
+        }
+
         imageLoader.loadImage(cat.imageUrl, catPhotoView)
         catNameView.text = cat.name
         catBreedView.text = when (cat.breed) {
