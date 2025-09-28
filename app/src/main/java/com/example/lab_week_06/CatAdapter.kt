@@ -5,6 +5,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.lab_week_06.model.CatModel
 import com.example.lab_week_06.ImageLoader
+import androidx.recyclerview.widget.ItemTouchHelper
+
 
 class CatAdapter(
     private val layoutInflater: LayoutInflater,
@@ -14,10 +16,18 @@ class CatAdapter(
 
     private val cats = mutableListOf<CatModel>()
 
+    //Delete Callback Instantiation
+    val swipeToDeleteCallback = SwipeToDeleteCallback()
+
     fun setData(newCats: List<CatModel>) {
         cats.clear()
         cats.addAll(newCats)
         notifyDataSetChanged()
+    }
+
+    fun removeItem(position: Int) {
+        cats.removeAt(position)
+        notifyItemRemoved(position)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CatViewHolder {
@@ -33,6 +43,43 @@ class CatAdapter(
 
     interface OnClickListener {
         fun onItemClick(cat: CatModel)
+    }
+
+
+    //Declare a class for the swipe functionality
+    inner class SwipeToDeleteCallback : ItemTouchHelper.SimpleCallback(0,
+        ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+        //This is used if item lists can be moved
+//Since we don't need that, we can set to false
+        override fun onMove(
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder,
+            target: RecyclerView.ViewHolder
+        ): Boolean = false
+        //This is used to determine which directions are allowed
+        override fun getMovementFlags(
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder
+        ) = if (viewHolder is CatViewHolder) {
+//Here, if we're not touching our phone, left and right are allowed
+            makeMovementFlags(
+                ItemTouchHelper.ACTION_STATE_IDLE,
+                ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+//Here, if we're swiping our phone, left and right are allowed
+            ) or makeMovementFlags(
+                ItemTouchHelper.ACTION_STATE_SWIPE,
+                ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+            )
+//Other gestures are not allowed (Drag, etc.)
+        } else {
+            0
+        }
+        //This is used for swipe detection
+//If a swipe is detected, then remove item
+        override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+            val position = viewHolder.adapterPosition
+            removeItem(position)
+        }
     }
 }
 
